@@ -33,11 +33,11 @@ trap "{ $BLINK1 --off > /dev/null 2>&1; exit $?; }" SIGINT SIGTERM
 # Daemon
 dbus-monitor --profile "type='signal',interface='$DBUS_INTERFACE',member='SavedstatusChanged'" | 
 while read -r line; do
+    # Get status text
     STATUS_ID=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetCurrent | cut -d ' ' -f5`
     STATUS=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetTitle int32:$STATUS_ID`
 
-    echo $STATUS
-    #Handle colour settings ...
+    #Handle changing the colour
     case "$STATUS" in 
         "Available")
             $BLINK1 --rgb $STATUS_AVAILABLE > /dev/null 2>&1;;
