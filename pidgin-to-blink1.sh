@@ -23,12 +23,12 @@ DBUS_SERVICE="im.pidgin.purple.PurpleService"
 DBUS_PATH="/im/pidgin/purple/PurpleObject"
 
 # Set colours
-STATUS_AVAILABE=0,255,0 # Green
-STATUS_AWAY=255,255,0   # Yellow
-STATUS_BUSY=255,0,0     # Red
+STATUS_AVAILABLE=0,255,0    # Green
+STATUS_AWAY=255,255,0       # Yellow
+STATUS_BUSY=255,0,0         # Red
 
 # On exit, shut off the blink1
-trap "{ $BLINK1 --off > /dev/null 2>&1; exit $?; }" SIGINT SIGTERM
+trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
 
 # Daemon
 dbus-monitor --profile "type='signal',interface='$DBUS_INTERFACE',member='SavedstatusChanged'" | 
@@ -40,10 +40,10 @@ while read -r line; do
     #Handle changing the colour
     case "$STATUS" in 
         "Available")
-            $BLINK1 --rgb $STATUS_AVAILABLE > /dev/null 2>&1;;
+            $BLINK1 --rgb $STATUS_AVAILABLE &> /dev/null;;
         "Away") 
-            $BLINK1 --rgb $STATUS_AWAY > /dev/null 2>&1;;
+            $BLINK1 --rgb $STATUS_AWAY &> /dev/null;;
         "Busy") 
-            $BLINK1 --rgb $STATUS_BUSY > /dev/null 2>&1;;
+            $BLINK1 --rgb $STATUS_BUSY &> /dev/null;;
     esac
 done
