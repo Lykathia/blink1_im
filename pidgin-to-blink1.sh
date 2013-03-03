@@ -24,21 +24,35 @@ DBUS_PATH="/im/pidgin/purple/PurpleObject"
 
 # Set colours
 STATUS_AVAILABLE=0,255,0    # Green
-STATUS_AWAY=255,255,0       # Yellow
+STATUS_AWAY=255,200,0       # Yellow
 STATUS_BUSY=255,0,0         # Red
 
 # On exit, shut off the blink1
 trap "{ $BLINK1 --off &> /dev/null; exit $?; }" SIGINT SIGTERM
 
 # Daemon
-dbus-monitor --profile "type='signal',interface='$DBUS_INTERFACE',member='SavedstatusChanged'" | 
+dbus-monitor --profile \
+    "type='signal',interface='$DBUS_INTERFACE',member='SavedstatusChanged'" \
+    "type='signal',interface='$DBUS_INTERFACE',member='Quitting'" \
+    "type='signal',interface='$DBUS_INTERFACE',member='SignedOn'" | 
 while read -r line; do
+    
+    message=`echo "$line" | rev | cut -d$'\t' -f1 | rev`
+
+    # Turn off the blink1 if pidgin is closed
+    if [ "$message" == 'Quitting' ]; then
+        $BLINK1 --off &> /dev/null
+        continue
+    fi
+
     # Get status text
     STATUS_ID=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetCurrent | cut -d ' ' -f5`
     STATUS=`dbus-send --print-reply=literal --dest=$DBUS_SERVICE $DBUS_PATH $DBUS_INTERFACE.PurpleSavedstatusGetTitle int32:$STATUS_ID`
 
+    status=`echo "${STATUS}" | tr -d ' '`
+
     #Handle changing the colour
-    case "$STATUS" in 
+    case "$status" in 
         "Available")
             $BLINK1 --rgb $STATUS_AVAILABLE &> /dev/null;;
         "Away") 
